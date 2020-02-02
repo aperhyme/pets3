@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 
 // require autoload file
 require("vendor/autoload.php");
+require("model/validation-functions.php");
 
 // Instantiate F3
 $f3 = Base::instance();
@@ -23,26 +24,45 @@ $f3->route('GET /', function () {
     //echo $views->render("views/home.html");
 });
 
-$f3->route('GET|POST /order', function() {
+$f3->route('GET|POST /order', function($f3) {
+    $_SESSION = array();
+    if(isset($_POST['animalName'])) {
+        $animal = $_POST['animalName'];
+        if (validString($animal)) {
+            $_SESSION['animal'] = $animal;
+            $f3->reroute('/order2');
+        } else {
+            $f3->set("errors['animal']", "Please enter an animal");
+        }
+    }
     $view = new Template();
     echo $view->render('views/form1.html');
 });
 
-$f3->route('GET|POST /order2', function() {
+$f3->route('GET|POST /order2', function($f3) {
 //    var_dump($_POST);
-    $_SESSION['pets'] = $_POST['animalName'];
+    $_SESSION = array();
+    if (isset($_POST['color'])) {
+        $color = $_POST['color'];
+        if (validColor($color)) {
+            $_SESSION['color'] = $color;
+            $f3->reroute('/results');
+        } else {
+            $f3->set("errors['color']", "Please enter a color");
+        }
+    }
     $view = new Template();
     echo $view->render('views/form2.html');
 });
 
 $f3->route('POST /results', function() {
 //    var_dump($_POST);
-    $_SESSION['pets2'] = $_POST['color'];
+    $_SESSION['color'] = $_POST['color'];
     $view = new Template();
     echo $view->render('views/results.html');
 });
 
-$f3->route('GET /@item', function($f3, $params){
+/*$f3->route('GET /@item', function($f3, $params){
     //var_dump($params);
     $item = $params['item'];
 
@@ -65,6 +85,6 @@ $f3->route('GET /@item', function($f3, $params){
         default:
             $f3->error(404);
     }
-});
+});*/
 // Run F3
 $f3->run();
